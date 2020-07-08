@@ -1,14 +1,14 @@
 # Welcome to this Titanic Kaggle project!
 Top 5% on Kaggle. Who will survive?
 
-![](Images/001_Titanic.JPG)
+![001_Titanic.JPG](Images/001_Titanic.JPG)
 
 **Today we will learn from data!** 
 
 Let's take a dive into the most popular Kaggle challenge: **the Titanic disaster**.\
-The main goal is to predict survivals. To do that properly a structured appproach must be done. 
+The main goal is to predict survivals. A structured appproach must be done to do that properly. 
 
-Three main parts will be taken.\
+Three main parts will be taken.
 + **Exploratory Data Analysis**\
 *Goal : Get a deep understanding of the data. No data modify will be made and statistical test will of course be used when necessary.*
 + **Preprocessing**\
@@ -21,34 +21,38 @@ PS : Many home made tools are used in this Kernel, I will explain them with more
 
 
 I'm super excited to share this work with you and I hope you will find it interresting. I wish you a good reading.
-***
 
 First thing first, necessary librairies are imported.
 
-	import pandas as pd
-	import numpy as np
-	import matplotlib.pyplot as plt
-	import seaborn as sns
-	import JC_AED
-	import JC_Prepross
-	from scipy.stats import norm
-	import JC_Class
+
+```python
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy.stats import norm
+pd.set_option('display.max_columns',None) #Put no limit in columns number to display 
+import warnings
+warnings.simplefilter('ignore')           #Ignore warning to don't be bothered.
+```
 
 Then, data are imported and a copy is immediately made to work on.
 
-	df_tr = pd.read_csv('train.csv')
-	df_te = pd.read_csv('test.csv')
-	df_train = df_tr.copy()
-	df_test = df_te.copy()
 
-## Part 1 : Exploratory Data Analysis
-### 1-1 : Shape Analysis
+```python
+df_tr = pd.read_csv('train.csv')
+df_te = pd.read_csv('test.csv')
+df_train = df_tr.copy()
+df_test = df_te.copy()
+```
 
 # 1 - Exploratory Data Analysis
 
 ## 1.1 - Shape Analysis
 
 ### 1.1.1 - Routine
+
+This first home made function I usually use is a small routine to apply on each datasets. It gives us some precious informations as the shape, head & tail, types of columns and a NaN mapping.
 
 
 ```python
@@ -328,7 +332,7 @@ shape_routine(df_train,limit = 20000)
 
 
 
-![png](Images/output_5_2.png)
+![png](Images/output_10_2.png)
 
 
 
@@ -563,8 +567,26 @@ shape_routine(df_test,limit=20000)
 
 
 
-![png](Images/output_6_2.png)
+![png](Images/output_11_2.png)
 
+
+Theses datasets are quite simple, very clean with a dozen of columns and some hundred raws. 
+Cabin variable contains 80% of NaN value while Age variable is containing 20%. Theses proportions are high but if we show a little bit of imagination we could find a solution to fill it.
+
+Here are the signification of each columns:
++ PassengerId : the passenger identification, not relevant, no need to introduce it much longer
++ Pclass : the class choosen by the passenger for the journey. It's very interresting because it globally gives the people social category (or their level of stingery, you choose).
++ Name : it contain the name, but also others very important information as the familly name and the status.
++ Sex : less and less clear nowadays
++ Age
++ SibSp : Number of siblings and spouses 
++ Parch : Number of parent and children
++ Ticket: Certainly the hardest variable to take care of, but we will make it.
++ Fare : The price of the ticket
++ Cabin : Name of the cabin
++ Embarked : Port of embarkation 
+
+Now we have to ensure that there is no duplicates.
 
 ### 1.1.2 - Duplicates Gestion
 
@@ -661,6 +683,10 @@ df_test[df_test.duplicated()]
 
 
 
+So, theses two datasets are very small and very clean! They are fare away from data in the real world, it gives us the advantage to a ligher preprocessing. Work will be quickest and easiest to exploit the data.
+
+<img src="Images/002_Titanic.jpg" width = 400>
+
 ## 1.2 - Substansive Analysis
 
 ### 1.2.1 - Target Analysis
@@ -705,8 +731,16 @@ plt.show()
 ```
 
 
-![png](Images/output_11_0.png)
+![png](Images/output_19_0.png)
 
+
+The target is composed of:
++ 40% Alive People
++ 60% Dead People
+
+Great, but as you can guess futher search must be done between the target and other variables to get a better understanding. We will see that in a couple of minute, just after the next section.
+
+Let's understand what is all variable dataset.
 
 ### 1.1.2 - Variable's sense
 
@@ -722,11 +756,11 @@ for categ in L_categ:
 ```
 
 
-![png](Images/output_13_0.png)
+![png](Images/output_22_0.png)
 
 
 
-![png](Images/output_13_1.png)
+![png](Images/output_22_1.png)
 
 
 
@@ -759,6 +793,8 @@ df_train['Embarked'].value_counts(dropna=False)
 
 
 
+Embarked and Sex are the only two non-ordinal categorical variables.
+
 **Numerical Variable :**
 
 
@@ -774,12 +810,18 @@ for num in L_num:
 ```
 
 
-![png](Images/output_17_0.png)
+![png](Images/output_27_0.png)
 
 
 
-![png](Images/output_17_1.png)
+![png](Images/output_27_1.png)
 
+
+Fare variable is clearly not normally distribued. It could be corrected with a cox-box transformation later. Some people bought very expensive ticket, more than 200£ and we can even see a more 500£ ticket which seems to be an outlier.
+
+**Ordinal categorical variable:**
+
+A new function could help us to analyse last variables and get nice outcomes.
 
 
 ```python
@@ -839,20 +881,28 @@ for Ord in L_Ord:
 ```
 
 
-![png](Images/output_19_0.png)
+![png](Images/output_31_0.png)
 
 
 
-![png](Images/output_19_1.png)
+![png](Images/output_31_1.png)
 
 
 
-![png](Images/output_19_2.png)
+![png](Images/output_31_2.png)
 
+
+Most of people traveled alone but some familly are really big!
+
+<img src="Images/004_Titanic.jpg" width=400>
 
 ### 1.2.3 - Target / Variables relation
 
 **Categorical Variable on Target**:
+
+Now you will read the first very important function I used. It make AB testing on the target with one exogene variable. This test is really practical to see what's going on **BUT** it is insufficient to say if the exog variable is significant on the target.
+For that we need to make a statistical test. Many choices could be made but CHI2 was used thanks to "chisquare" in scipy.stats library.
+AB_Testing function apply CHI2 test and return p_value. The test is two-sided, default alpha limit is 5%.
 
 
 ```python
@@ -865,35 +915,36 @@ def AB_Testing(Endog_col,Exog_col,chi_test = True,aplha_chi_test = 0.05,annot=Fa
     Exog_col: Exogene Variable [pd.Serie]
     chi_test : Realize chi_test for significativity [bool] 
     '''
-    if len(Endog_col.unique())==2:
-        ct = pd.crosstab(Endog_col,Exog_col)
-        #---- Calculate the mean of AB_Tests's probabilies 
-        mean = (ct.iloc[1,:]/ct.sum(axis=0)).mean()
-    
-        plt.bar(np.arange(0,len(ct.columns)),
-                ct.sum(axis=0)/ct.sum(axis=0),
+    if len(Endog_col.unique())==2:                   #Verify that there are only 2 cases on target 
+        ct = pd.crosstab(Endog_col,Exog_col)         #Calculate the crosstable used for A/B Test  
+         
+        mean = (ct.iloc[1,:]/ct.sum(axis=0)).mean()  #Calculate the mean of AB_Tests's probabilies
+        
+        #Plot results
+        plt.bar(np.arange(0,len(ct.columns)),   #First Bar plot on the background
+                ct.sum(axis=0)/ct.sum(axis=0),  #Or just 1... 100% (because it's normalized), right. I hadn' even thought about it
                 color = '#96308d',
                 label = ct.index[0],
                 tick_label = ct.columns,
                 edgecolor = '#28013d',
                 linewidth = 1
                )
-        plt.bar(np.arange(0,len(ct.columns)),
-                ct.iloc[1,:]/ct.sum(axis=0),
+        plt.bar(np.arange(0,len(ct.columns)),  #Second Bar plot on the foreground
+                ct.iloc[1,:]/ct.sum(axis=0),   #Calculate Props for the second case
                 color='#4f0a49',
                 label=ct.index[1],
                 tick_label = ct.columns,
                 edgecolor = '#28013d',
                 linewidth = 1
                )
-        
-        plt.plot([-0.5,len(ct.columns)+0.5],
+        # ----------------- Plot the global mean of each exog variable's subsample 
+        plt.plot([-0.5,len(ct.columns)+0.5],    
                  [mean,mean],
                  color = '#0ac07d',
                  linewidth = 2,
                  linestyle = 'dashed'
                 )
-        plt.text(len(ct.columns),
+        plt.text(len(ct.columns),           
                 mean,
                 'Mean: \n'+str(round(mean*100,1))+'%',
                 fontsize = 13,
@@ -901,7 +952,7 @@ def AB_Testing(Endog_col,Exog_col,chi_test = True,aplha_chi_test = 0.05,annot=Fa
                 verticalalignment='center',
                 color = 'k'
                 )
-        
+        # ---------------- Plot annot of each exog variable's subsample
         if annot:
             for i in np.arange(0,len(ct.columns)):
                 plt.text(i,
@@ -924,13 +975,17 @@ def AB_Testing(Endog_col,Exog_col,chi_test = True,aplha_chi_test = 0.05,annot=Fa
         plt.title('A/B testing on '+ str(Endog_col.name) +' endog variable',fontsize=16)
         plt.show()
         
+        # ----------------- The chi2 test
         if chi_test:
-            ct_chi2 = ct.T
+            ct_chi2 = ct.T                     #Real probs table
             sum_chi2_col = ct_chi2.sum(axis=0)
             sum_chi2_raw = ct_chi2.sum(axis=1)
             sum_T = ct_chi2.sum().sum()
+            # Expected probs table
             ct_chi2_T = pd.concat([sum_chi2_raw*(sum_chi2_col[0]/sum_T),sum_chi2_raw*(sum_chi2_col[1]/sum_T)],axis = 1)
-            result = chisquare(ct.T,ct_chi2_T,axis=None)[1]
+            
+            result = chisquare(ct.T,ct_chi2_T,axis=None)[1]  #Apply the Chi2 test between real and expected tables
+            # Print results
             if result < aplha_chi_test:
                 print('CHI2 TEST: ',Exog_col.name, ' SIGNIFICANT (P_value = ',result,')')
             else:
@@ -953,39 +1008,46 @@ for categ in L:
 ```
 
 
-![png](Images/output_22_0.png)
+![png](Images/output_36_0.png)
 
 
     CHI2 TEST:  Pclass  SIGNIFICANT (P_value =  1.2999075479362352e-20 )
     
 
 
-![png](Images/output_22_2.png)
+![png](Images/output_36_2.png)
 
 
     CHI2 TEST:  SibSp  SIGNIFICANT (P_value =  0.0003755439996098109 )
     
 
 
-![png](Images/output_22_4.png)
+![png](Images/output_36_4.png)
 
 
     CHI2 TEST:  Parch  SIGNIFICANT (P_value =  0.009267967487002352 )
     
 
 
-![png](Images/output_22_6.png)
+![png](Images/output_36_6.png)
 
 
     CHI2 TEST:  Sex  SIGNIFICANT (P_value =  9.837731783301247e-57 )
     
 
 
-![png](Images/output_22_8.png)
+![png](Images/output_36_8.png)
 
 
     CHI2 TEST:  Embarked  SIGNIFICANT (P_value =  7.170959898696937e-05 )
     
+
+What we can see now is really interresting (I mean beyond theses beautiful colors)! Significant insights could already be given:
++ **Sex** is the more significant variable with a 10e-57 p_value. In fact female has 75% of chance to survive, contrary to male with a small 20%... where is gender equality?
++ **Pclass** is also really significant, first class passenger had about 65% of survival chance instead of 25% for third class. Why? That's because saving boads were on the top of the titanic near to first class cabins.
++ **Embarked, SibSp and Parch** are also significant. 
+
+Let's see what we can note on the numerical variables.
 
 **Numerical Variables on Target:**
 
@@ -1000,14 +1062,22 @@ for name in L_num:
 ```
 
 
-![png](Images/output_24_0.png)
+![png](Images/output_39_0.png)
 
 
 
-![png](Images/output_24_1.png)
+![png](Images/output_39_1.png)
 
+
+Babies and children survived more, this is understandable: women and children first wasn't a myth! 
+Unfortunately, many old people didn't have this chance. 
+
+Last thing important to notice is the blue pic on the fare graphic. It must be third class people who bought a more affordable ticket.
 
 ### 1.2.4 - Variable / Variable relation
+
+To finish variable/variable relation is studied. 
+A medium correlation between Fare/Pclass, between Parch/SibSP and between Age/Pclass can be observed.
 
 
 ```python
@@ -1025,7 +1095,7 @@ sns.heatmap(abs(df_train[L_num+L_Ord].corr()),annot=True,mask=mask)
 
 
 
-![png](Images/output_26_1.png)
+![png](Images/output_43_1.png)
 
 
 
@@ -1043,11 +1113,10 @@ plt.show()
 ```
 
 
-![png](Images/output_27_0.png)
+![png](Images/output_44_0.png)
 
 
-Outliers can be seen, with a more expensive than 500£ per ticket. The ticket number is also the same (and all people survived). 
-Otherwise, resids are normally distribued.
+Outliers can be seen, with a more expensive than 500£ per ticket. The ticket number is also the same (and all people survived). Let's see this unusual value:
 
 
 ```python
@@ -1141,6 +1210,13 @@ df_train[df_train['Fare']>400]
 
 
 
+And now, could we still consider this price as an outilers? The ticket is the same. In fact what we see is fundamental:
++ One ticket can be shared between many passenger, so **Fare concern the Ticket and not the passenger!**
++ Sometimes people who shared the same ticket **don't belongs to the same familly!**
++ People who shared the same ticket don't have the same cabin (but they have likely the same first letter), and maybe we could fill NaN value thanks to that.
+
+As you can see, it gives many ideas to features engineering step.
+
 
 ```python
 sns.pairplot(df_train.drop(['PassengerId','Survived'],axis = 'columns',inplace = False))
@@ -1154,7 +1230,7 @@ sns.pairplot(df_train.drop(['PassengerId','Survived'],axis = 'columns',inplace =
 
 
 
-![png](Images/output_30_1.png)
+![png](Images/output_48_1.png)
 
 
 Sibling Spouses and Parent children number is deacreasing when the age and the fare is increasing. There is a big familly effect.
@@ -1168,91 +1244,11 @@ New variable can be tested in features engineering part:
 + Name
 + Cabin
 
+Now we understand more our datas, we can exploit them in order to predict who is a survival on the test set. 
 
-```python
-df_train['Nb_P'] = df_train['SibSp']+df_train['Parch']
-df_train['Fare_Log']=np.log1p(df_train['Fare'])
-df_train['Fare_P']= df_train['Fare']/df_train['Nb_P']
-df_train['Fare_P_Log']= np.log1p(df_train['Fare_P'])
-```
+![003_Titanic.jfif](Images/003_Titanic.jfif)
 
 
 ```python
-plt.plot(df_train[['Nb_P','Age']].groupby(['Nb_P']).median())
+
 ```
-
-
-
-
-    [<matplotlib.lines.Line2D at 0x1a8b12df988>]
-
-
-
-
-![png](Images/output_33_1.png)
-
-
-
-```python
-plt.plot(df_train[['Nb_P','Fare_Log']].groupby(['Nb_P']).mean())
-```
-
-
-
-
-    [<matplotlib.lines.Line2D at 0x1a8b02a9cc8>]
-
-
-
-
-![png](Images/output_34_1.png)
-
-
-
-```python
-plt.plot(df_train[['Nb_P','Fare_P_Log']].groupby(['Nb_P']).mean())
-```
-
-
-
-
-    [<matplotlib.lines.Line2D at 0x1a8b16b3688>]
-
-
-
-
-![png](Images/output_35_1.png)
-
-
-
-```python
-plt.plot(df_train[['Nb_P','Fare']].groupby(['Nb_P']).median())
-```
-
-
-
-
-    [<matplotlib.lines.Line2D at 0x1a8b0136048>]
-
-
-
-
-![png](Images/output_36_1.png)
-
-
-
-```python
-sns.distplot(df_train['Age'],fit=norm)
-```
-
-
-
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x1a8b151f808>
-
-
-
-
-![png](Images/output_37_1.png)
-
-
